@@ -1,9 +1,11 @@
 # Hackathon project
 
 ## Goal
+
 Ship a working, demo-able AI app in ~12 hours. Read TASK.md first for the challenge. Track current work in current-task.md.
 
 ## Rules
+
 - Working demo beats perfect code. Build the core flow end to end first, polish later.
 - Keep it simple: no new frameworks, no premature abstractions, no extra features not in TASK.md.
 - Commit small and often. Run the build before saying something is done.
@@ -13,19 +15,24 @@ Ship a working, demo-able AI app in ~12 hours. Read TASK.md first for the challe
 - Delegate independent work to subagents (explore/general) in parallel to move faster.
 - Log all command/build/deploy output under ./.agent-logs/ (timestamped files).
 - Keep current-task.md updated with the active task and description.
+- If a TODO's mcp is available use it anf keep it updated.
+- Use all the mcp's the second you need them.
 
 ## Stack
+
 - Frontend: Next.js + Tailwind + shadcn/ui
 - Backend: Next.js API routes
 - LLM: OpenAI-compatible client, base URL and key from env
 - DB: SQLite (swap to Supabase only if needed)
 
 ## Commands
+
 - dev: `npm run dev`
 - build: `npm run build`
 - deploy: see .opencode/skills/deploy
 
 ## Definition of done
+
 Deployed URL works, README explains the problem + demo steps, repo pushed.
 
 <!-- BEGIN:nextjs-agent-rules -->
