@@ -33,6 +33,7 @@ Never output a second html block. Never output partial documents. If the user as
 - Aim for a finished artifact the user would be proud to send: cover block, sensible sections, and a closing note where appropriate.
 - Respect the user's language, tone and length. Default to 1–2 pages unless asked for more.
 - When editing an existing document, keep everything the user did not ask to change, preserve their styling system, and return the whole document again.
+- When <current_document> is present, every reply must contain that entire document again with the change applied. Never answer with prose only, never describe the edit without shipping the updated HTML.
 
 ## Editing an uploaded PDF
 When the user supplies a PDF, its extracted text appears in <source_document>. Treat it as the authoritative content: reconstruct it faithfully as clean HTML (repair broken line breaks, hyphenation and reading order), then apply the requested edits. Also review <source_pages> image previews when present to match layout intent.`
@@ -41,7 +42,7 @@ export function buildSupportingContext(attachment: Attachment | undefined): stri
   if (!attachment) return ""
 
   const parts = [
-    `## Attached source document\nFilename: ${attachment.name}\nPages: ${attachment.pageCount}\n\n<source_document>\n${attachment.text.slice(0, 60000)}\n</source_document>`,
+    `## Attached source document\nFilename: ${attachment.name}\nPages: ${attachment.pageCount}\n\n<source_document>\n${attachment.text.slice(0, 30000)}\n</source_document>`,
   ]
 
   if (attachment.images?.length) {

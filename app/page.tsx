@@ -321,6 +321,8 @@ export default function Home() {
         setChats((prev) =>
           prev.map((chat) => (chat.id === active.id ? { ...chat, html: parsed.html as string, docTitle: title, updatedAt: Date.now() } : chat))
         )
+      } else {
+        setError("The model replied without a document. Send the request again to retry.")
       }
     } catch (err) {
       if ((err as Error)?.name === "AbortError") {

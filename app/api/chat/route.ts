@@ -25,7 +25,7 @@ function buildMessages(body: Body) {
   const context: string[] = []
 
   if (body.documentHtml?.trim()) {
-    context.push(`## Current document\nThis is the document the user is looking at right now.\n<current_document>\n${body.documentHtml.slice(0, 45000)}\n</current_document>`)
+    context.push(`## Current document\nThis is the document the user is looking at right now.\n<current_document>\n${body.documentHtml.slice(0, 22000)}\n</current_document>`)
   }
 
   const attachmentContext = buildSupportingContext(lastUser?.attachment)
