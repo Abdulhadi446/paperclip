@@ -14,6 +14,9 @@ Never output a second html block. Never output partial documents. If the user as
 - Put repeating footers/headers inside each page section, not via position: fixed (it breaks pagination).
 - The LAST page section must not force a trailing blank page: use \`.page:last-child { break-after: auto; }\`.
 - Keep every page's content comfortably inside its height; move overflow to the next page instead of shrinking type below 9px. Remember \`.page\` has \`overflow: hidden\`: anything past 297mm is cut off in the PDF, so never size a block to the full page height.
+- Budget: one A4 page holds about **350–450 words** at 10–11px body type, or 3–4 compact sections. Treat that as the ceiling, not a target.
+- If the material needs more room, add another \`<section class="page">\` (same header treatment, then continue the content). Splitting is always correct; cramming or overlapping is always wrong.
+- On pages with a footer, use \`padding-bottom: 26mm\` on \`.page\` and keep all body blocks above it — footers may be absolutely positioned, nothing else may.
 
 ## Styling rules (these are hard constraints)
 - Inline a single \`<style>\` block in <head>. No external stylesheets, no frameworks, no CDN links, no @import.
