@@ -20,8 +20,10 @@ Core flow (must work end to end):
 
 ## Status
 - [x] Done — live at https://a117a038643266.lhr.life (temporary tunnel; see README › Deployment)
+- [x] Full Playwright E2E green on the real model: generate → preview → PDF (80KB) → upload → edit → reload → 390px layout
 
 ## Notes
 - Logs: ./.agent-logs/
+- Tunnel URL rotates; `~/tunnel-url.txt` on tests2 always holds the live one (`~/tunnel-loop.sh` reconnects automatically).
 - Mock mode: `PAPERCLIP_MOCK=1` in .env streams a built-in demo document when no key is set.
 - Next 16 gotcha: `cacheComponents: true` forbids `export const runtime|dynamic` in route handlers.
