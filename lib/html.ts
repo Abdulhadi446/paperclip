@@ -20,6 +20,7 @@ export type Extracted = {
 export function extractDocument(text: string): Extracted {
   let html: string | null = null
   let complete = false
+  let proseSource = text
 
   // Prefer the last fenced block: models sometimes show a snippet first.
   for (const match of text.matchAll(FENCE)) {
@@ -29,7 +30,20 @@ export function extractDocument(text: string): Extracted {
     complete = match[0].trimEnd().endsWith("```")
   }
 
-  const prose = text
+  // Models occasionally ignore the fence and stream a bare document. Accept it
+  // rather than showing an empty preview.
+  if (!html) {
+    const start = text.search(/<!DOCTYPE html|<html[\s>]/i)
+    if (start >= 0) {
+      const tail = text.slice(start)
+      const end = tail.toLowerCase().lastIndexOf("</html>")
+      html = end >= 0 ? tail.slice(0, end + "</html>".length) : tail
+      complete = end >= 0
+      proseSource = text.slice(0, start)
+    }
+  }
+
+  const prose = proseSource
     .replace(FENCE, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim()
@@ -39,7 +53,7 @@ export function extractDocument(text: string): Extracted {
 
 /** True once the streamed text looks like it has started a document. */
 export function hasDocumentStart(text: string): boolean {
-  return /```html/i.test(text)
+  return /```html|<!DOCTYPE html|<html[\s>]/i.test(text)
 }
 
 const BLOCKED = [
@@ -56,6 +70,29 @@ export function sanitizeDocument(html: string): string {
   let out = html
   for (const rule of BLOCKED) out = out.replace(rule, "")
   return out
+}
+
+/**
+ * Documents carry their margins in `@page`, which only applies when printing.
+ * On screen that rule is ignored, so the preview would render edge-to-edge and
+ * lose its A4 proportions. This injects screen-only equivalents.
+ */
+const PREVIEW_CSS = `<style data-paperclip-preview>
+@page{size:A4;margin:0}
+html{background:#ffffff}
+body{width:210mm!important;min-height:297mm;margin:0 auto!important;padding:15mm 16mm 18mm!important;box-sizing:border-box}
+*,*::before,*::after{box-sizing:border-box}
+img,svg,table,pre{max-width:100%}
+table{border-collapse:collapse}
+</style>`
+
+export function toPreviewDocument(html: string): string {
+  if (!html.trim()) return html
+  if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, `${PREVIEW_CSS}</head>`)
+  if (/<html[^>]*>/i.test(html)) {
+    return html.replace(/<html[^>]*>/i, (match) => `${match}<head>${PREVIEW_CSS}</head>`)
+  }
+  return `${PREVIEW_CSS}${html}`
 }
 
 /** Safe filename stem for the exported PDF. */

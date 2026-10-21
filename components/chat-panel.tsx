@@ -161,8 +161,9 @@ export function ChatPanel({
                 put on <em className="italic text-brass">paper?</em>
               </h2>
               <p className="mt-3 max-w-[42ch] text-[12.5px] leading-[1.7] text-ink/55">
-                Describe the document you need and it takes shape on the right, page by page. Already have a PDF?
-                Attach it and ask for changes in plain language.
+                Describe the document you need and it takes shape on the right. It asks for facts it cannot know —
+                names, dates, amounts — instead of inventing them. Already have a file? Attach a PDF, Word document,
+                text, markdown or CSV and ask for changes in plain language.
               </p>
             </div>
 
@@ -329,7 +330,7 @@ export function ChatPanel({
                 <input
                   ref={fileRef}
                   type="file"
-                  accept="application/pdf,.pdf"
+                  accept=".pdf,.docx,.txt,.md,.markdown,.csv,.html,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/csv,text/html"
                   className="hidden"
                   onChange={(event) => {
                     handleFile(event.target.files)
@@ -340,7 +341,7 @@ export function ChatPanel({
                   type="button"
                   onClick={() => fileRef.current?.click()}
                   disabled={attachBusy}
-                  aria-label="Attach a PDF"
+                  aria-label="Attach a file"
                   className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[10px] font-medium text-ink/55 transition hover:bg-ink/[0.04] hover:text-ink disabled:opacity-40"
                 >
                   {attachBusy ? (
@@ -348,7 +349,7 @@ export function ChatPanel({
                   ) : (
                     <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
                   )}
-                  {attachBusy ? "Reading…" : "Attach PDF"}
+                  {attachBusy ? "Reading…" : "Attach file"}
                 </button>
 
                 <span className="mx-1 h-3.5 w-px shrink-0 bg-ink/10" aria-hidden="true" />

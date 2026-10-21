@@ -1,6 +1,6 @@
 # Paperclip — chat to PDF
 
-Describe a document in plain language and watch it build itself, page by page, as a print-ready A4 PDF. Or upload an existing PDF and ask for edits in the same conversation. No account, no template gallery, no drag-and-drop builder.
+Describe a document in plain language, answer a question or two, and watch it build itself into a print-ready A4 PDF. Or attach a PDF, Word file, markdown, CSV or text document and ask for edits in the same conversation. No account, no template gallery, no drag-and-drop builder — and no invented facts.
 
 > Built for the "chat-to-pdf" hackathon challenge in [TASK.md](./TASK.md).
 >
@@ -14,11 +14,12 @@ Making a decent-looking PDF is still absurdly slow: open a word processor, fight
 
 1. Open the app — you land straight in a chat. No signup.
 2. Click a starter ("One-page proposal", "Invoice", …) or type *"a one-page launch brief for a habit app called Tide"*.
-3. Watch the right-hand panel compose the document live as tokens stream in.
-4. Ask for a change in plain language — *"make the palette warmer and add a pricing table"* — and the same document updates in place.
-5. Hit **Download PDF**. That file is rendered by headless Chromium from the HTML you're looking at, A4, print backgrounds on.
-6. Want to edit something you already have? **Attach PDF** — the text (and page previews) are extracted, and the model rebuilds it as editable HTML.
-7. Chats and documents persist in the browser; the history rail on the left holds every document you've made.
+3. If a fact that changes the document is missing, the assistant asks 1–4 short questions instead of inventing names, dates or amounts. Answer them in the next message.
+4. Watch the right-hand panel compose the document live as tokens stream in. Content flows across as many A4 pages as it needs — nothing is cropped.
+5. Ask for a change in plain language — *"make the palette warmer and add a pricing table"* — and the same document updates in place.
+6. Hit **Download PDF**. That file is rendered by headless Chromium from the HTML you're looking at, A4, print backgrounds on.
+7. Want to edit something you already have? **Attach file** — PDF, DOCX, TXT, MD, CSV or HTML; the text (and PDF page previews) is extracted and the model rebuilds it as editable HTML.
+8. Chats and documents persist in the browser; the history rail on the left holds every document you've made.
 
 ## How it works
 
@@ -26,10 +27,11 @@ Making a decent-looking PDF is still absurdly slow: open a word processor, fight
 | --- | --- | --- |
 | Streaming chat | `app/api/chat/route.ts` | Any OpenAI-compatible endpoint, streamed to the client as plain text. The model is instructed to answer with prose + one ` ```html ` block. |
 | Document parser | `lib/html.ts` | Extracts the HTML block even mid-stream, strips scripts/handlers, estimates pages, titles the doc. |
-| Live preview | `components/pdf-panel.tsx` | Sandboxed iframe, real 210×297mm pages, scaled to fit, throttled while streaming. |
+| Live preview | `components/pdf-panel.tsx` | Sandboxed iframe at true 210mm width, screen-only page margins injected, scaled to fit, throttled while streaming. |
 | PDF export | `lib/pdf/render.ts` → `app/api/pdf/export` | `puppeteer-core` + Chromium, A4, `printBackground`, singleton browser reused across requests. |
-| PDF import | `lib/pdf/extract.ts` → `app/api/pdf/extract` | `pdfjs-dist` text extraction per page + `pdftoppm` page images for vision models. |
-| Prompting | `lib/prompt.ts` | A4/print CSS rules, palette/font constraints the renderer supports, editing behaviour for uploaded PDFs. |
+| Document import | `lib/files/extract.ts` → `app/api/files/extract` | PDF via `pdfjs-dist` (+ `pdftoppm` page images for vision models), DOCX via `mammoth`, TXT/MD/CSV/HTML decoded and cleaned. |
+| Prompting | `lib/prompt.ts` | Ask-before-inventing rules, flowing A4 print CSS (no fixed page boxes, no cropping), hard renderer constraints, editing behaviour. |
+| Design library | `lib/templates.ts` | Eight design systems (editorial, Swiss, finance, studio, technical, gallery, poster, soft) the model picks from, adapts, or replaces with its own. |
 
 Design constraint that matters: the prompt forbids `oklch()`, webfonts and external CSS so what renders in the preview is exactly what Chromium prints.
 
@@ -63,9 +65,11 @@ No key? Set `PAPERCLIP_MOCK=1` and the app streams a built-in demo document so t
 ## Limits
 
 - No accounts; history lives in the browser and is capped (last 40 chats, 40 messages each).
-- Uploaded PDFs are read as text + first three page images, capped at 40 pages / 200k characters — not full pixel-perfect reconstruction.
-- Scanned (image-only) PDFs have no text layer, so editing them depends on the page images.
+- Uploads are capped at 15 MB / 200k characters (PDFs: 40 pages). PDFs are read as text + first three page images, DOCX via `mammoth`, plain-text formats decoded directly — not a pixel-perfect reconstruction.
+- Scanned (image-only) PDFs have no text layer, so editing them depends on the page images and `pdftoppm` being installed on the server.
 - Export requires a Chromium binary on the server (`/api/pdf/health` reports whether it found one).
+- The assistant is instructed never to invent facts: when something material is missing it asks, or marks the gap as `[bracketed placeholder]` if you tell it to proceed anyway. It can still make a judgement call on tone or structure.
+- While streaming, a network drop shows "Server unreachable, retrying…" and retries automatically (4 attempts, backoff) before surfacing a friendly error.
 
 ## Deployment
 

@@ -1,7 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { ArrowLeft, Download, Loader2, Minus, Plus } from "lucide-react"
+
+import { toPreviewDocument } from "@/lib/html"
 
 type Props = {
   html: string
@@ -50,6 +52,7 @@ export function PdfPanel({ html, rawHtml, docTitle, generating, onDownload, down
   const [zoom, setZoom] = useState(1)
 
   const shownHtml = useThrottled(html, generating ? 700 : 0)
+  const previewHtml = useMemo(() => toPreviewDocument(shownHtml), [shownHtml])
 
   useEffect(() => {
     const node = containerRef.current
@@ -68,7 +71,7 @@ export function PdfPanel({ html, rawHtml, docTitle, generating, onDownload, down
   const statusLabel = generating
     ? "Composing"
     : html
-      ? `${pageCount} ${pageCount === 1 ? "page" : "pages"}`
+      ? `~${pageCount} ${pageCount === 1 ? "page" : "pages"}`
       : "Blank"
 
   return (
@@ -232,7 +235,7 @@ export function PdfPanel({ html, rawHtml, docTitle, generating, onDownload, down
               <iframe
                 ref={frameRef}
                 title="PDF preview"
-                srcDoc={shownHtml}
+                srcDoc={previewHtml}
                 sandbox="allow-same-origin"
                 onLoad={() => {
                   const frame = frameRef.current

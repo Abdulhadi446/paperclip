@@ -179,8 +179,9 @@ export default function Home() {
   }, [activeId])
 
   const handleAttach = useCallback(async (file: File) => {
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
-      setError("Please choose a PDF file.")
+    const supported = /\.(pdf|docx|txt|md|markdown|csv|html?)$/i.test(file.name)
+    if (!supported) {
+      setError("Unsupported file. Attach a PDF, Word document, text, markdown, CSV or HTML file.")
       return
     }
     setAttachBusy(true)
@@ -188,20 +189,21 @@ export default function Home() {
     try {
       const body = new FormData()
       body.append("file", file)
-      const res = await fetch("/api/pdf/extract", { method: "POST", body })
+      const res = await fetch("/api/files/extract", { method: "POST", body })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data.error ?? "Could not read that PDF.")
+        throw new Error(data.error ?? "Could not read that file.")
       }
       const data = await res.json()
       setAttachment({
         name: file.name,
-        pageCount: data.pageCount ?? 0,
+        kind: data.kind ?? "pdf",
+        pageCount: data.pageCount ?? 1,
         text: data.text ?? "",
         images: Array.isArray(data.pages) ? data.pages.map((p: { image?: string }) => p.image).filter(Boolean).slice(0, 3) : [],
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not read that PDF.")
+      setError(err instanceof Error ? err.message : "Could not read that file.")
     } finally {
       setAttachBusy(false)
     }
@@ -272,17 +274,43 @@ export default function Home() {
     }
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history, documentHtml, model }),
-        signal: controller.signal,
-      })
+      const maxAttempts = 4
+      let attempt = 0
+      let res: Response | null = null
+
+      while (!res) {
+        try {
+          const candidate = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: history, documentHtml, model }),
+            signal: controller.signal,
+          })
+          const transient = candidate.status === 502 || candidate.status === 503 || candidate.status === 504
+          if (transient && attempt < maxAttempts - 1) {
+            attempt += 1
+            setError(`Server unreachable, retrying… (attempt ${attempt + 1} of ${maxAttempts})`)
+            await new Promise((resolve) => setTimeout(resolve, attempt * 1500))
+            continue
+          }
+          res = candidate
+        } catch (err) {
+          if ((err as Error)?.name === "AbortError") throw err
+          if (attempt >= maxAttempts - 1) {
+            throw new Error("Server unreachable. Check your connection, then send again — nothing was lost.")
+          }
+          attempt += 1
+          setError(`Server unreachable, retrying… (attempt ${attempt + 1} of ${maxAttempts})`)
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1500))
+        }
+      }
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? `Request failed (${res.status})`)
       }
+
+      setError(null)
 
       const reader = res.body?.getReader()
       if (!reader) throw new Error("Streaming not supported by the browser.")
@@ -321,13 +349,15 @@ export default function Home() {
         setChats((prev) =>
           prev.map((chat) => (chat.id === active.id ? { ...chat, html: parsed.html as string, docTitle: title, updatedAt: Date.now() } : chat))
         )
-      } else {
-        setError("The model replied without a document. Send the request again to retry.")
       }
+      // No html block is a valid answer: the assistant is asking clarifying
+      // questions instead of guessing at the user's facts.
     } catch (err) {
       if ((err as Error)?.name === "AbortError") {
         const parsed = extractDocument(streamBuffer.current)
         if (streamBuffer.current.trim()) pushAssistant(parsed.prose || streamBuffer.current)
+      } else if (err instanceof TypeError) {
+        setError("Connection lost while composing. The partial draft above is safe — send again to continue.")
       } else {
         setError(err instanceof Error ? err.message : "Something went wrong.")
       }

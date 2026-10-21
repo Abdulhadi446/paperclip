@@ -17,6 +17,7 @@ Ship a working, demo-able AI app in ~12 hours. Read TASK.md first for the challe
 - Keep current-task.md updated with the active task and description.
 - If a TODO's mcp is available use it anf keep it updated.
 - Use all the mcp's the second you need them.
+- Run all the commands in background to save time and dont do work yourself use sub agents becuase multiple sub-agents are faster than a single dev.
 
 ## Stack
 

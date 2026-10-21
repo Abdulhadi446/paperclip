@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import { PdfExtractError, extractPdf } from "@/lib/pdf/extract"
+import { FileExtractError, MAX_FILE_BYTES, extractFile } from "@/lib/files/extract"
 
+// Legacy PDF-only endpoint. Kept for the current client; delegates to the
+// shared extractor while preserving the original response shape
+// ({ pageCount, text, pages }) and error messages.
 // Next 16 with cacheComponents enabled rejects route segment config exports
 // (runtime, dynamic, maxDuration, revalidate). POST handlers are dynamic.
-
-const MAX_FILE_BYTES = 15 * 1024 * 1024
 
 function isPdfUpload(name: string, type: string, data: Buffer): boolean {
   const mimeOk = type === "application/pdf" || type === "application/x-pdf"
@@ -56,13 +57,18 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await extractPdf(data)
-    return NextResponse.json(result, {
-      status: 200,
-      headers: { "Cache-Control": "no-store" },
+    const result = await extractFile(data, {
+      name: upload.name || "",
+      type: upload.type || "",
+      kind: "pdf",
     })
+    // Deliberately omit kind/name to keep the legacy payload identical.
+    return NextResponse.json(
+      { pageCount: result.pageCount, text: result.text, pages: result.pages },
+      { status: 200, headers: { "Cache-Control": "no-store" } },
+    )
   } catch (err) {
-    if (err instanceof PdfExtractError) {
+    if (err instanceof FileExtractError) {
       console.error("[pdf/extract]", err.message)
       return NextResponse.json({ error: err.message }, { status: 422 })
     }

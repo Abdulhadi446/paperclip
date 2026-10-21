@@ -19,8 +19,9 @@ Core flow (must work end to end):
 - [x] Public tunnel URL verified end to end
 
 ## Status
-- [x] Done — live at http://bore.pub:45123 (temporary tunnel; see README › Deployment)
+- [x] Done — live at http://bore.pub:45123 (stable tunnel; see README › Deployment)
 - [x] Full Playwright E2E green on the real model: generate → preview → PDF (80KB) → upload → edit → reload → 390px layout
+- [ ] Round 2: continuous page flow (no cropping), clarifying questions, non-PDF uploads, design library, retry UX, crash supervision
 
 ## Notes
 - Logs: ./.agent-logs/

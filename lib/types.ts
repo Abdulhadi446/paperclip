@@ -2,6 +2,8 @@ export type Role = "user" | "assistant"
 
 export type Attachment = {
   name: string
+  /** Upload kind (pdf, docx, txt, md, csv, html). */
+  kind?: string
   pageCount: number
   text: string
   /** Optional rendered page previews (data URLs), used for vision models. */

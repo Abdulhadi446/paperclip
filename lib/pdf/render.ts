@@ -25,7 +25,6 @@ const RENDER_TIMEOUT_MS = 25_000
 const FONT_WAIT_MS = 3_000
 
 const PRINT_CSS = `
-@page{size:A4;margin:0}
 html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body{margin:0;background:#fff}
 *,*::before,*::after{box-sizing:border-box}
@@ -34,6 +33,13 @@ svg{max-width:100%}
 table{max-width:100%;border-collapse:collapse}
 pre{white-space:pre-wrap;word-break:break-word}
 `
+
+/**
+ * Documents own their page margins through `@page`. Only when a document forgot
+ * to declare one do we supply a sane A4 fallback — injecting it unconditionally
+ * would override the author's margins and break pagination.
+ */
+const FALLBACK_PAGE_CSS = `@page{size:A4;margin:15mm 16mm 18mm}`
 
 let browserPromise: Promise<Browser> | null = null
 
@@ -92,7 +98,8 @@ function buildDocument(input: string, title?: string): string {
   const source = input.trim()
   const titleTag =
     title && !/<title[\s>]/i.test(source) ? `<title>${escapeHtml(title)}</title>` : ""
-  const headExtras = `${titleTag}<style>${PRINT_CSS}</style>`
+  const pageTag = /@page\b/i.test(source) ? "" : `<style>${FALLBACK_PAGE_CSS}</style>`
+  const headExtras = `${titleTag}${pageTag}<style>${PRINT_CSS}</style>`
 
   if (!/<html[\s>]/i.test(source)) {
     return (
@@ -155,8 +162,8 @@ export async function renderHtmlToPdf(html: string, opts?: { title?: string }): 
       page.pdf({
         format: "A4",
         printBackground: true,
-        preferCSSPageSize: false,
-        margin: { top: "14mm", bottom: "14mm", left: "16mm", right: "16mm" },
+        preferCSSPageSize: true,
+        margin: { top: "0", bottom: "0", left: "0", right: "0" },
         timeout: RENDER_TIMEOUT_MS,
       }),
       RENDER_TIMEOUT_MS,

@@ -45,7 +45,7 @@ function buildMessages(body: Body) {
 
 function mockDocument(prompt: string) {
   const title = prompt.slice(0, 70).replace(/[<>&]/g, " ") || "Untitled document"
-  return `Here is a first draft. I kept it to one page so you can tell me what to change.
+  return `Here is a first draft. Tell me what to change and I will rebuild it.
 
 \`\`\`html
 <!DOCTYPE html>
@@ -54,27 +54,38 @@ function mockDocument(prompt: string) {
 <meta charset="utf-8" />
 <title>${title}</title>
 <style>
-  @page { size: A4; margin: 0; }
+  @page { size: A4; margin: 16mm 16mm 18mm; }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: #1b1b1b; background: #ffffff; }
-  .page { width: 210mm; height: 297mm; padding: 18mm; position: relative; overflow: hidden; break-after: page; }
-  .page:last-child { break-after: auto; }
-  .eyebrow { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; letter-spacing: .18em; text-transform: uppercase; color: #8a6a3b; }
-  h1 { font-size: 34pt; line-height: 1.05; margin: 10mm 0 6mm; }
-  .rule { height: 2px; background: #1b1b1b; width: 100%; margin: 6mm 0; }
-  p { font-size: 11.5pt; line-height: 1.65; color: #333333; }
-  .footer { position: absolute; bottom: 12mm; left: 18mm; right: 18mm; display: flex; justify-content: space-between; font-family: Arial, Helvetica, sans-serif; font-size: 8pt; color: #888888; border-top: 1px solid #dddddd; padding-top: 3mm; }
+  body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: #1b1b1b; background: #ffffff; font-size: 11pt; line-height: 1.6; }
+  .eyebrow { font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt; letter-spacing: .2em; text-transform: uppercase; color: #8a6a3b; }
+  h1 { font-size: 33pt; line-height: 1.06; margin: 8mm 0 5mm; letter-spacing: -0.015em; }
+  .rule { height: 2px; background: #1b1b1b; margin: 5mm 0 7mm; }
+  p { margin: 0 0 4.5mm; color: #333333; }
+  h2 { font-size: 14pt; margin: 8mm 0 3mm; break-after: avoid; }
+  ul { margin: 0 0 5mm; padding-left: 5mm; }
+  li { margin-bottom: 2mm; }
+  code { font-family: ui-monospace, monospace; font-size: 9.5pt; background: #f3efe6; padding: 1px 4px; }
+  .callout { border-left: 3px solid #8a6a3b; background: #faf6ee; padding: 4mm 5mm; margin: 6mm 0; break-inside: avoid; }
+  .closing { margin-top: 9mm; padding-top: 4mm; border-top: 1px solid #ddd5c6; font-size: 9pt; color: #8a8378; }
 </style>
 </head>
 <body>
-  <section class="page">
-    <div class="eyebrow">Paperclip demo</div>
-    <h1>${title}</h1>
-    <div class="rule"></div>
-    <p>This is a local demo document, shown because no API key is configured yet. Add <strong>OPENAI_API_KEY</strong> to <code>.env</code> and the assistant will write real, tailored documents here.</p>
-    <p>Try asking for a proposal, a resume, an invoice, a one-pager or a report. You can also upload a PDF and ask for edits — the layout you see on the right is exactly what gets exported.</p>
-    <div class="footer"><span>Paperclip</span><span>Page 1 of 1</span></div>
-  </section>
+  <div class="eyebrow">Paperclip demo</div>
+  <h1>${title}</h1>
+  <div class="rule"></div>
+  <p>This is a local demo document, shown because no API key is configured yet. Add <code>OPENAI_API_KEY</code> to <code>.env</code> and the assistant will write real, tailored documents here.</p>
+  <p>Paperclip asks before it invents. Give it the facts — who it is for, dates, amounts, names — and it designs a document around them. Leave a fact out and it will ask, or mark the gap as a bracket for you to fill.</p>
+  <h2>What you can make</h2>
+  <ul>
+    <li>Proposals, briefs and reports that flow across as many A4 pages as the content needs</li>
+    <li>Invoices and quotes with real numbers you supply</li>
+    <li>Edited versions of a PDF, Word file, markdown, CSV or text document you attach</li>
+  </ul>
+  <div class="callout">
+    <strong>No template lock-in.</strong> Each document picks its own type pairing, palette and structure — editorial, Swiss, financial, or something invented for the subject.
+  </div>
+  <p>The layout on the right is exactly what gets exported. When you are happy, press <strong>Download PDF</strong>.</p>
+  <div class="closing">Paperclip · demo mode · set OPENAI_API_KEY to use a real model</div>
 </body>
 </html>
 \`\`\`

@@ -89,7 +89,7 @@ try {
 
   log("generate a document")
   const started = Date.now()
-  await sendPrompt("A one-page launch brief for a habit-tracking app called Tide")
+  await sendPrompt("A one-page launch brief for a habit-tracking app called Tide, launching 14 March 2026. Team of three in Lisbon, 2,000 beta users, pricing 4 EUR per month. Include the product idea, launch plan, goals and a short team note.")
   await page.waitForFunction(
     () => {
       const frame = document.querySelector("iframe")
