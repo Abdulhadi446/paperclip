@@ -4,7 +4,7 @@ Describe a document in plain language and watch it build itself, page by page, a
 
 > Built for the "chat-to-pdf" hackathon challenge in [TASK.md](./TASK.md).
 >
-> **Live demo:** https://7e564da0baabff.lhr.life — the free tunnel URL is temporary; see [Deployment](#deployment) to bring it back in one command.
+> **Live demo:** https://f2a47304d40134.lhr.life — the free tunnel URL is temporary; see [Deployment](#deployment) to bring it back in one command.
 
 ## The problem
 
@@ -82,13 +82,14 @@ cd ~/paperclip-app && git pull
 PATH=$HOME/node22/bin:$PATH npm ci && PATH=$HOME/node22/bin:$PATH npm run build
 bash ~/restart-app.sh          # restarts next start with LD_LIBRARY_PATH + CHROMIUM_PATH
 
-# public URL (temporary, no interstitial)
-ssh -o ServerAliveInterval=30 -R 80:localhost:3000 nokey@localhost.run
+# public URL (temporary, no interstitial) — supervised, auto-reconnects
+setsid nohup bash ~/tunnel-loop.sh >/dev/null 2>&1 &
+cat ~/tunnel-url.txt        # current https://<id>.lhr.life address
 ```
 
 `CHROMIUM_PATH` on the server points at `~/chrome-hs/chrome-headless-shell-linux64/chrome-headless-shell`, and the process runs with `LD_LIBRARY_PATH=$HOME/cdeps/usr/lib/x86_64-linux-gnu`. `/api/pdf/health` confirms both Chromium and poppler are visible.
 
-Cloudflare quick tunnels return 404 from this network, so the demo uses localhost.run. If the URL dies, re-run the `ssh -R` command and it prints a fresh `https://*.lhr.life` address.
+Cloudflare quick tunnels return 404 from this network, so the demo uses localhost.run. Free localhost.run sessions expire every ~10–15 minutes and come back on a *different* subdomain, so `~/tunnel-loop.sh` keeps one connected and rewrites `~/tunnel-url.txt` whenever the address changes: check that file for the live link. The app itself is unaffected — only the public alias rotates.
 
 ## Verification
 

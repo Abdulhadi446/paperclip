@@ -19,7 +19,7 @@ Core flow (must work end to end):
 - [x] Public tunnel URL verified end to end
 
 ## Status
-- [x] Done — live at https://7e564da0baabff.lhr.life (temporary tunnel; see README › Deployment)
+- [x] Done — live at https://f2a47304d40134.lhr.life (temporary tunnel; see README › Deployment)
 
 ## Notes
 - Logs: ./.agent-logs/
