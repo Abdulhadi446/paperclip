@@ -97,6 +97,19 @@ Cloudflare quick tunnels return 404 from this network, so the demo runs two SSH/
 
 The app itself is unaffected by either; only the public alias moves.
 
+### Supervision
+
+`scripts/supervise.sh` keeps the app up without a human: it starts `npm start` in `~/paperclip-app`, restarts it on any exit (2s backoff, capped at 30s), and probes `/api/pdf/health` every 30 seconds. Three failed probes in a row kill only the supervisor's own app process tree and restart it, so a hung process or a 4 AM OOM heals itself. A pidfile prevents double starts.
+
+```bash
+scp scripts/supervise.sh tests2:~/supervise.sh
+ssh tests2 'setsid nohup bash ~/supervise.sh >/dev/null 2>&1 </dev/null &'
+ssh tests2 'bash ~/supervise.sh --status'   # alive? last health result?
+ssh tests2 'bash ~/supervise.sh --stop'     # stop supervisor + app tree
+```
+
+Supervisor events (starts, restarts, health results) go to `~/supervisor.log`; the app's own output is appended to `~/app.log`.
+
 ## Verification
 
 ```bash
