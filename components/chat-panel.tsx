@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, type RefObject } from "react"
+import { useEffect, useRef, useState, type RefObject } from "react"
 import {
   ArrowUp,
   ChevronDown,
@@ -84,6 +84,18 @@ export function ChatPanel({
 }: Props) {
   const fileRef = useRef<HTMLInputElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const [elapsed, setElapsed] = useState(0)
+
+  // A visible clock makes a 40s generation feel like progress instead of a stall.
+  useEffect(() => {
+    if (!streaming) {
+      setElapsed(0)
+      return
+    }
+    const started = Date.now()
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000)
+    return () => clearInterval(id)
+  }, [streaming])
 
   const handleFile = (files: FileList | null) => {
     const file = files?.[0]
@@ -126,7 +138,7 @@ export function ChatPanel({
             className={`h-1.5 w-1.5 rounded-full ${streaming ? "animate-pulse bg-brass" : "bg-[#8a9271]"}`}
             aria-hidden="true"
           />
-          {streaming ? "Composing" : "Ready"}
+          {streaming ? (elapsed >= 2 ? `Composing · ${elapsed}s` : "Composing") : "Ready"}
         </span>
       </header>
 
