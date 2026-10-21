@@ -21,7 +21,14 @@ Core flow (must work end to end):
 ## Status
 - [x] Done — live at http://bore.pub:45123 (stable tunnel; see README › Deployment)
 - [x] Full Playwright E2E green on the real model: generate → preview → PDF (80KB) → upload → edit → reload → 390px layout
-- [ ] Round 2: continuous page flow (no cropping), clarifying questions, non-PDF uploads, design library, retry UX, crash supervision
+- [x] Round 2: continuous page flow (no cropping), clarifying questions, non-PDF uploads, design library, retry UX, crash supervision
+  - Pagination: 8-section test doc exported as 5 A4 pages, margins clean, end marker intact on last page
+  - Clarify: "make me an invoice" → 5 numbered questions, no document; answered → 32s full invoice
+  - Uploads: pdf/docx/txt/md/csv/html all extract (public docx check via bore)
+  - Design library: 8 named systems + freedom to invent, no fixed template
+  - Retry UX: 4 attempts, "Server unreachable, retrying… (attempt N of 4)", friendly final message
+  - Supervision: `scripts/supervise.sh` on tests2, killed `next-server` → 200 again in 9s
+  - Public E2E on round-2 build: ALL CHECKS PASSED (http://bore.pub:45123)
 
 ## Notes
 - Logs: ./.agent-logs/
