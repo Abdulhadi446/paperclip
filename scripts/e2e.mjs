@@ -50,7 +50,7 @@ const previewText = () =>
     }
   })
 
-const waitGeneration = async (label, timeout = 300_000) => {
+const waitGeneration = async (label, timeout = 180_000) => {
   await page
     .waitForFunction(() => document.querySelector("[data-streaming]")?.getAttribute("data-streaming") === "true", null, {
       timeout: 15_000,
@@ -82,6 +82,7 @@ const sendPrompt = async (text, label = "generation") => {
 try {
   log("open", BASE)
   await page.goto(BASE, { waitUntil: "domcontentloaded" })
+  await page.waitForSelector('[data-ready="true"]', { timeout: 60_000 })
   await page.waitForSelector("textarea", { timeout: 30_000 })
   await page.screenshot({ path: `${SHOTS}/e2e-01-empty.png` })
   check("empty state renders", (await page.locator("textarea").count()) === 1)

@@ -3,6 +3,8 @@
 Describe a document in plain language and watch it build itself, page by page, as a print-ready A4 PDF. Or upload an existing PDF and ask for edits in the same conversation. No account, no template gallery, no drag-and-drop builder.
 
 > Built for the "chat-to-pdf" hackathon challenge in [TASK.md](./TASK.md).
+>
+> **Live demo:** https://8f5e7d9e1433ad.lhr.life — the free tunnel URL is temporary; see [Deployment](#deployment) to bring it back in one command.
 
 ## The problem
 
@@ -65,6 +67,34 @@ No key? Set `PAPERCLIP_MOCK=1` and the app streams a built-in demo document so t
 - Scanned (image-only) PDFs have no text layer, so editing them depends on the page images.
 - Export requires a Chromium binary on the server (`/api/pdf/health` reports whether it found one).
 
+## Deployment
+
+The live app runs on the `tests2` box (Ubuntu 24.04, 2 vCPU) under Node 22, reached through a temporary SSH tunnel.
+
+```bash
+# on tests2, one-time: portable Node + Chrome deps
+# ~/node22            portable Node 22.23.4
+# ~/cdeps             libatk & friends extracted with dpkg-deb -x (no sudo on the box)
+# ~/chrome-hs         chrome-headless-shell 156
+
+# on tests2, every deploy
+cd ~/paperclip-app && git pull
+PATH=$HOME/node22/bin:$PATH npm ci && PATH=$HOME/node22/bin:$PATH npm run build
+bash ~/restart-app.sh          # restarts next start with LD_LIBRARY_PATH + CHROMIUM_PATH
+
+# public URL (temporary, no interstitial)
+ssh -o ServerAliveInterval=30 -R 80:localhost:3000 nokey@localhost.run
+```
+
+`CHROMIUM_PATH` on the server points at `~/chrome-hs/chrome-headless-shell-linux64/chrome-headless-shell`, and the process runs with `LD_LIBRARY_PATH=$HOME/cdeps/usr/lib/x86_64-linux-gnu`. `/api/pdf/health` confirms both Chromium and poppler are visible.
+
+Cloudflare quick tunnels return 404 from this network, so the demo uses localhost.run. If the URL dies, re-run the `ssh -R` command and it prints a fresh `https://*.lhr.life` address.
+
 ## Verification
+
+```bash
+node scripts/e2e.mjs                                  # local, http://localhost:3000
+BASE_URL=https://…lhr.life node scripts/e2e.mjs       # against the deployed app
+```
 
 `node scripts/e2e.mjs` drives the built app with Playwright: generates a document, checks the live preview, downloads the PDF, uploads a PDF and edits it, reloads to prove persistence, and checks the 390px layout for overflow.

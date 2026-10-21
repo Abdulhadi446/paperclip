@@ -370,6 +370,7 @@ export default function Home() {
   return (
     <div
       className="flex h-dvh w-full flex-col overflow-hidden bg-paper text-ink"
+      data-ready={ready ? "true" : "false"}
       data-streaming={streaming ? "true" : "false"}
       data-messages={active?.messages.length ?? 0}
       data-has-document={active?.html ? "true" : "false"}

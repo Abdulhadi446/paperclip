@@ -13,12 +13,13 @@ Core flow (must work end to end):
 - [x] PDF upload → text extraction (+ page images for vision models)
 - [x] Multiple chats + history persisted in localStorage
 - [x] Model selector (env-driven)
-- [ ] UI polish pass
-- [ ] Real LLM verification (needs OPENAI_API_KEY in .env)
-- [ ] Production build + deploy to tests2 (needs Node 22 there; it has 18)
+- [x] UI polish pass
+- [x] Real LLM verification (OpenRouter free model + fallback)
+- [x] Production build + deploy to tests2 (Node 22 + chrome-headless-shell + extracted libs)
+- [x] Public tunnel URL verified end to end
 
 ## Status
-- [ ] In progress
+- [x] Done — live at https://8f5e7d9e1433ad.lhr.life (temporary tunnel; see README › Deployment)
 
 ## Notes
 - Logs: ./.agent-logs/
