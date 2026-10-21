@@ -144,7 +144,8 @@ export async function POST(req: Request) {
       completion = await generate(model)
     } catch (error) {
       if (!fallbackModel || fallbackModel === model) throw error
-      console.warn(`[chat] ${model} failed, retrying with ${fallbackModel}`)
+      const detail = error instanceof Error ? error.message.slice(0, 160) : String(error)
+      console.warn(`[chat] ${model} failed (${detail}), retrying with ${fallbackModel}`)
       completion = await generate(fallbackModel)
     }
 

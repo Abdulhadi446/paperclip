@@ -132,14 +132,14 @@ try {
   await page.locator('input[type="file"]').setInputFiles(uploadPdf)
   await page.waitForFunction(() => document.body.innerText.includes("test.pdf"), null, { timeout: 60_000, polling: 300 })
   check("attachment chip appears", true)
-  await sendPrompt("Keep the same content but tighten the layout into a single page.", "edit")
+  await sendPrompt('Add a line directly under the headline that says "Prepared for the board — confidential." Keep the rest of the content as it is.', "edit")
   await page
     .waitForFunction(
       (before) => {
         const frame = document.querySelector("iframe")
         try {
           const now = (frame?.contentDocument?.body?.innerText ?? "").replace(/\s+/g, " ").trim()
-          return now.length > 250 && now !== before
+          return now.length > 250 && now !== before && /prepared for the board/i.test(now)
         } catch {
           return false
         }
@@ -152,7 +152,7 @@ try {
   await fs.writeFile(`${OUT}/edited.txt`, editedText)
   check(
     "edited document changed",
-    editedText.length > 250 && editedText !== generatedText,
+    editedText.length > 250 && /prepared for the board/i.test(editedText),
     `${editedText.length} chars vs ${generatedText.length} before`
   )
   await page.screenshot({ path: `${SHOTS}/e2e-04-edited.png` })

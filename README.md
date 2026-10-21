@@ -4,7 +4,7 @@ Describe a document in plain language and watch it build itself, page by page, a
 
 > Built for the "chat-to-pdf" hackathon challenge in [TASK.md](./TASK.md).
 >
-> **Live demo:** https://f2a47304d40134.lhr.life — the free tunnel URL is temporary; see [Deployment](#deployment) to bring it back in one command.
+> **Live demo:** https://a117a038643266.lhr.life — the free tunnel URL is temporary; see [Deployment](#deployment) to bring it back in one command.
 
 ## The problem
 
