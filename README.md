@@ -4,7 +4,7 @@ Describe a document in plain language, answer a question or two, and watch it bu
 
 > Built for the "chat-to-pdf" hackathon challenge in [TASK.md](./TASK.md).
 >
-> **Live demo:** http://bore.pub:45123 — a fixed-port tunnel to the deployed box, with no interstitial. HTTPS alternative: `cat ~/tunnel-url.txt` on the server (rotating free localhost.run address). See [Deployment](#deployment).
+> **Live demo:** https://testings.thetrillioniar.me — a named Cloudflare tunnel to the deployed box, stable hostname, no interstitial. Plain-HTTP fallback: http://bore.pub:45123. See [Deployment](#deployment).
 
 ## The problem
 
@@ -86,20 +86,25 @@ cd ~/paperclip-app && git pull
 PATH=$HOME/node22/bin:$PATH npm ci && PATH=$HOME/node22/bin:$PATH npm run build
 bash ~/restart-app.sh          # restarts next start with LD_LIBRARY_PATH + CHROMIUM_PATH
 
-# public URLs — both supervised, both auto-reconnect
-setsid nohup bash ~/bore-loop.sh    >/dev/null 2>&1 &   # stable: http://bore.pub:45123
-setsid nohup bash ~/tunnel-loop.sh  >/dev/null 2>&1 &   # https://<id>.lhr.life (rotates)
-cat ~/tunnel-url.txt                                    # current HTTPS address
+# public URLs — all supervised, all auto-reconnect
+setsid nohup bash ~/cf-loop.sh      >/dev/null 2>&1 &   # stable HTTPS: https://testings.thetrillioniar.me
+setsid nohup bash ~/bore-loop.sh    >/dev/null 2>&1 &   # plain HTTP:   http://bore.pub:45123
 ```
 
 `CHROMIUM_PATH` on the server points at `~/chrome-hs/chrome-headless-shell-linux64/chrome-headless-shell`, and the process runs with `LD_LIBRARY_PATH=$HOME/cdeps/usr/lib/x86_64-linux-gnu`. `/api/pdf/health` confirms both Chromium and poppler are visible.
 
-Cloudflare quick tunnels return 404 from this network, so the demo runs two SSH/TCP tunnels instead:
+Public access uses a **named Cloudflare tunnel**, which keeps one fixed hostname across reconnects:
 
-- **bore.pub** (primary) — `~/bore` forwards to a *fixed* remote port, so `http://bore.pub:45123` stays the same across reconnects. `~/bore-loop.sh` restarts it if it drops. Plain HTTP, but full app functionality (including PDF downloads).
-- **localhost.run** (HTTPS backup) — free sessions expire every ~10–15 minutes and return on a *different* subdomain, so `~/tunnel-loop.sh` rewrites `~/tunnel-url.txt` whenever the address changes.
+```bash
+cloudflared tunnel create paperclip                     # one time
+cloudflared tunnel route dns --overwrite-dns a3aac37e-… testings.thetrillioniar.me
+# ~/.cloudflared/paperclip.yml: ingress testings.thetrillioniar.me -> http://localhost:3000
+setsid nohup bash ~/cf-loop.sh > ~/cf.log 2>&1 < /dev/null &
+```
 
-The app itself is unaffected by either; only the public alias moves.
+`scripts/cf-loop.sh` restarts `cloudflared` whenever it exits. Anonymous quick tunnels (`cloudflared tunnel --url …`) return 404 from this network — only the named tunnel on the account's own zone works. `bore.pub` stays running as a plain-HTTP fallback; its fixed remote port means `http://bore.pub:45123` survives reconnects.
+
+The app itself is unaffected by the tunnel; only the public alias moves.
 
 ### Supervision
 
@@ -118,7 +123,7 @@ Supervisor events (starts, restarts, health results) go to `~/supervisor.log`; t
 
 ```bash
 node scripts/e2e.mjs                                  # local, http://localhost:3000
-BASE_URL=http://bore.pub:45123 node scripts/e2e.mjs   # against the deployed app
+BASE_URL=https://testings.thetrillioniar.me node scripts/e2e.mjs   # against the deployed app
 ```
 
 `node scripts/e2e.mjs` drives the built app with Playwright: generates a document, checks the live preview, downloads the PDF, uploads a PDF and edits it, reloads to prove persistence, and checks the 390px layout for overflow.
