@@ -19,21 +19,21 @@ Core flow (must work end to end):
 - [x] Public tunnel URL verified end to end
 
 ## Status
-- [x] Done — live at https://testings.thetrillioniar.me (named Cloudflare tunnel) · plain-HTTP fallback http://bore.pub:45123
-- [x] Full Playwright E2E green on the real model: generate → preview → PDF (80KB) → upload → edit → reload → 390px layout
+- [x] Done and verified on the real model — **demo deployment retired**, repo is the deliverable
+- [x] Full Playwright E2E green: generate → preview → PDF (80KB) → upload → edit → reload → 390px layout
 - [x] Round 2: continuous page flow (no cropping), clarifying questions, non-PDF uploads, design library, retry UX, crash supervision
   - Pagination: 8-section test doc exported as 5 A4 pages, margins clean, end marker intact on last page
   - Clarify: "make me an invoice" → 5 numbered questions, no document; answered → 32s full invoice
-  - Uploads: pdf/docx/txt/md/csv/html all extract (public docx check via bore)
+  - Uploads: pdf/docx/txt/md/csv/html all extract (verified through the public URL)
   - Design library: 8 named systems + freedom to invent, no fixed template
   - Retry UX: 4 attempts, "Server unreachable, retrying… (attempt N of 4)", friendly final message
   - Supervision: `scripts/supervise.sh` on tests2, killed `next-server` → 200 again in 9s
-  - Public E2E on round-2 build: ALL CHECKS PASSED (http://bore.pub:45123)
-  - Named Cloudflare tunnel: https://testings.thetrillioniar.me, E2E ALL CHECKS PASSED, PDF export 92KB/1.5s
+  - Public E2E on round-2 build: ALL CHECKS PASSED; PDF export 92KB/1.5s
+- [x] Undeployed: app, tunnels, DNS record and server-side toolchain removed from tests2
 
 ## Notes
 - Logs: ./.agent-logs/
-- Public URL is fixed: `scripts/cf-loop.sh` keeps the `paperclip` named tunnel connected to `testings.thetrillioniar.me`.
-- `~/tunnel-url.txt` still holds a rotating localhost.run address (`~/tunnel-loop.sh`), kept only as a legacy backup.
+- Deployment is documented in README but no host is live; redeploy = follow README › Deployment.
+
 - Mock mode: `PAPERCLIP_MOCK=1` in .env streams a built-in demo document when no key is set.
 - Next 16 gotcha: `cacheComponents: true` forbids `export const runtime|dynamic` in route handlers.
