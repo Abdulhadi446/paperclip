@@ -4,7 +4,9 @@ Describe a document in plain language, answer a question or two, and watch it bu
 
 > Built for the "chat-to-pdf" hackathon challenge in [TASK.md](./TASK.md).
 >
-> **Running it:** `npm install && npm run dev`, add the env vars below, open http://localhost:3000. The hosted demo was retired after the event; [Deployment](#deployment) documents how it was served if you want to stand one up again.
+> **Live demo:** https://paperclip.thetrillioniar.me — no account, opens straight into the chat.
+>
+> **Running it:** `npm install && npm run dev`, add the env vars below, open http://localhost:3000. [Deployment](#deployment) documents how the hosted instance is served.
 
 ## The problem
 
@@ -73,7 +75,7 @@ No key? Set `PAPERCLIP_MOCK=1` and the app streams a built-in demo document so t
 
 ## Deployment
 
-> The hosted demo was retired after the event: the app directory, portable Node, Chrome libs, tunnel and DNS record were removed from `tests2`. What follows is the recipe that was used, kept as reference.
+> Hosted on `tests2` (Ubuntu) under a named Cloudflare tunnel: **https://paperclip.thetrillioniar.me**.
 
 The app runs on an Ubuntu box under Node 22 with a system Chromium, served through a named Cloudflare tunnel.
 
@@ -99,8 +101,8 @@ Public access uses a **named Cloudflare tunnel**, which keeps one fixed hostname
 
 ```bash
 cloudflared tunnel create paperclip                     # one time
-cloudflared tunnel route dns --overwrite-dns <tunnel-id> docs.example.com
-# ~/.cloudflared/paperclip.yml: ingress docs.example.com -> http://localhost:3000
+cloudflared tunnel route dns --overwrite-dns <tunnel-id> paperclip.thetrillioniar.me
+# ~/.cloudflared/paperclip.yml: ingress paperclip.thetrillioniar.me -> http://localhost:3000
 setsid nohup bash ~/cf-loop.sh > ~/cf.log 2>&1 < /dev/null &
 ```
 

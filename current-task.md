@@ -19,7 +19,7 @@ Core flow (must work end to end):
 - [x] Public tunnel URL verified end to end
 
 ## Status
-- [x] Done and verified on the real model — **demo deployment retired**, repo is the deliverable
+- [x] Done and verified on the real model — **live at https://paperclip.thetrillioniar.me**
 - [x] Full Playwright E2E green: generate → preview → PDF (80KB) → upload → edit → reload → 390px layout
 - [x] Round 2: continuous page flow (no cropping), clarifying questions, non-PDF uploads, design library, retry UX, crash supervision
   - Pagination: 8-section test doc exported as 5 A4 pages, margins clean, end marker intact on last page
@@ -29,11 +29,12 @@ Core flow (must work end to end):
   - Retry UX: 4 attempts, "Server unreachable, retrying… (attempt N of 4)", friendly final message
   - Supervision: `scripts/supervise.sh` on tests2, killed `next-server` → 200 again in 9s
   - Public E2E on round-2 build: ALL CHECKS PASSED; PDF export 92KB/1.5s
-- [x] Undeployed: app, tunnels, DNS record and server-side toolchain removed from tests2
+- [x] Redeployed (Oct 28): toolchain rebuilt on tests2, new named tunnel `paperclip` (43916be2-…), DNS `paperclip.thetrillioniar.me`, supervisor + cf-loop running
 
 ## Notes
 - Logs: ./.agent-logs/
-- Deployment is documented in README but no host is live; redeploy = follow README › Deployment.
+- Live host: https://paperclip.thetrillioniar.me (named Cloudflare tunnel on tests2; `scripts/cf-loop.sh` + `scripts/supervise.sh` keep it up).
+- Redeploy recipe: README › Deployment.
 
 - Mock mode: `PAPERCLIP_MOCK=1` in .env streams a built-in demo document when no key is set.
 - Next 16 gotcha: `cacheComponents: true` forbids `export const runtime|dynamic` in route handlers.
